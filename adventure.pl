@@ -1,121 +1,78 @@
-/* <The name of this game>, by <your name goes here>. */
-:- dynamic i_am_at/1, at/2, holding/1.
-:- retractall(at(_, _)), retractall(i_am_at(_)), retractall(alive(_)).
+/* Treasure hunt, by Imran Bohoran. */
 
-i_am_at(someplace).
-path(someplace, n, someplace).
-at(thing, someplace).
+/* Dynamically changable facts */
+:-dynamic(pickedup/1).
+:-dynamic(ticket_bought/1).
 
-/* These rules describe how to pick up an object. */
-take(X) :-
-	holding(X),
-	write(’You’’re already holding it!’),
-	!, nl.
+/** Facts **/
+room('Entrance hall').
+room('Tool shed').
+room('Dake cave').
+room('Secret passage').
+room('Resting place').
+room('Challange room').
+room('Lego city replica').
+room('Puzzle room').
+room('Treasure room').
 
-take(X) :-
-	i_am_at(Place),
-	at(X, Place),
-	retract(at(X, Place)),
-	assert(holding(X)),
-	write(’OK.’),
-	!, nl.
+things_available('Ticket counter', 'Entrance hall').
+things_available('Ladder', 'Tool shed').
+things_available('Torch', 'Dark cave').
+things_available('Rope', 'Tool shed').
+things_available('Apple', 'Resting place').
+things_available('Carrots', 'Resting place').
+things_available('Water', 'Resting place').
+things_available('Pear', 'Resting place').
+things_available('Grapes', 'Resting place').
+things_available('Dragon', 'Challange room') .
+things_available('Lego people', 'Lego city replica').
+things_available('Lego houses', 'Lego city replica').
+things_available('Lego cars', 'Lego city replica').
+things_available('Lego trees', 'Lego city replica').
 
-take(_) :-
-	write(’I don’’t see it here.’),
-	nl.
+challange('Dark cave', 'It''s dark in here. Swith on the light').
+challange('Challange room', 'Distracted by light, what can you use').
+challange('Lego city replica', 'Fill in the blanks "Everything is _____"').
+challange('Puzzle room', 'If you find 20 coins in the treasure, and you have 4 friends, how much will each get?').
 
+challange_answer('Dark caev', 'Torch').
+challange_answer('Puzzle room', '4').
+challange_answer('Lego city replica', 'awsome').
 
-/* These rules describe how to put down an object. */
-drop(X) :-
-	holding(X),
-	i_am_at(Place),
-	retract(holding(X)),
-	assert(at(X, Place)),
-	write(’OK.’),
-	!, nl.
+can_pickup('Ladder').
+can_pickup('Torch').
+can_pickup('Rope').
+can_pickup('Water').
 
-drop(_) :-
-	write(’You aren’’t holding it!’),
-	nl.
+food_not_allowed('Apple').
+food_not_allowed('Carrots').
+food_not_allowed('Pear').
+food_not_allowed('Grapes').
 
+edible('Apple').
+edible('Carrots').
+edible('Pear').
+edible('Grapes').
 
-/* These rules define the direction letters as calls to go/1. */
-n :- go(n).
+drinkable('Water').
 
-s :- go(s).
+pickedup('Nothing').
 
-e :- go(e).
+ticket_bought('no').
 
-w :- go(w).
-
-
-/* This rule tells how to move in a given direction. */
-go(Direction) :-
-	i_am_at(Here),
-	path(Here, Direction, There),
-	retract(i_am_at(Here)),
-	assert(i_am_at(There)),
-	!, look.
-
-go(_) :-
-	write(’You can’’t go that way.’).
-
-
-/* This rule tells how to look about you. */
-look :-
-	i_am_at(Place),
-	describe(Place),
-	nl,
-	notice_objects_at(Place),
-	nl.
-
-
-/* These rules set up a loop to mention all the objects in your vicinity. */
-notice_objects_at(Place) :-
-	at(X, Place),
-	write(’There is a ’), write(X), write(’ here.’), nl,
-	fail.
-
-notice_objects_at(_).
+path('Entrance hall', 'Too shed').
+path('Tool shed', 'Entrance hall').
+path('Tool shed', 'Dark cave').
+path('Dark cave', 'Resting place').
+path('Resting place', 'Secret passage').
+path('Secret passage', 'Resting place').
+path('Secret passage', 'Lego city replica').
+path('Lego city replica', 'Secret passage').
+path('Lego city replica', 'Challange room').
+path('Resting place', 'Challange room').
+path('Challange room', 'Resting place').
+path('Challange room', 'Puzzle room').
+path('Puzzle room', 'Challange room').
+path('Puzzle room', 'Treasure room').
 
 
-/* This rule tells how to die. */
-die :-
-	finish.
-
-/* Under UNIX, the "halt." command quits Prolog but does not
-remove the output window. On a PC, however, the window
-disappears before the final output can be seen. Hence this
-routine requests the user to perform the final "halt."
-This is specific to SWI-Prolog */
-
-finish :-
-	nl,
-	write(’The game is over. Please enter the "halt." command.’),
-	nl.
-
-
-/* This rule just writes out game instructions. */
-instructions :-
-	nl,
-	write(’Enter commands using standard Prolog syntax.’), nl,
-	write(’Available commands are:’), nl,
-	write(’start. -- to start the game.’), nl,
-	write(’n. s. e. w. -- to go in that direction.’), nl,
-	write(’take(Object). -- to pick up an object.’), nl,
-	write(’drop(Object). -- to put down an object.’), nl,
-	write(’look. -- to look around you again.’), nl,
-	write(’instructions. -- to see this message again.’), nl,
-	write(’halt. -- to end the game and quit.’), nl,
-	nl.
-
-
-/* This rule prints out instructions and tells where you are. */
-start :-
-	instructions,
-	look.
-
-
-/* These rules describe the various rooms. Depending on
-circumstances, a room may have more than one description. */
-describe(someplace) :- write(’You are someplace.’), nl.
