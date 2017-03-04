@@ -5,6 +5,7 @@
 :-dynamic(ticket_bought/1).
 :-dynamic(current_location/1).
 :-dynamic(game_started/1).
+:-dynamic(in_the_bag/1).
 
 /** Facts **/
 room('Entrance hall').
@@ -58,11 +59,10 @@ edible('Grapes').
 
 drinkable('Water').
 
-pickedup('Nothing').
-
 ticket_bought('no').
 
 current_location('Entrance hall').
+in_the_bag().
 
 game_started(false).
 
@@ -132,6 +132,64 @@ where_to_go(Place) :-
 	nl.
 
 where_to_go(_).
+
+
+take(Thing) :-
+	allowed_to_take(Thing),
+	take_thing(Thing).
+
+allowed_to_take(Thing) :-
+	current_location(Place),
+	things_available(Thing, Place).
+allowed_to_take(Thing) :-
+	write('There is no '), write(Thing), write(' here'),nl,
+	fail.
+
+take_thing(Thing) :-
+	write('You''re taking : '), write(Thing), nl,
+	asserta(in_the_bag(Thing)),
+	write('Take over complete'), nl.
+
+drop(Thing) :-
+	allowed_to_drop(Thing),
+	drop_thing(Thing).
+
+allowed_to_drop(Thing) :-
+	write('Checking if you have '), write(Thing), nl,
+	in_the_bag(Thing).
+
+can_drop(Thing) :-
+	write('You don''t have '), write(Thing), write(', to drop it'), nl,
+	fail.
+
+drop_thing(Thing) :- 
+	write('You''re dropping '), write(Thing), nl,
+	retract(in_the_bag(Thing)),
+	write('Drop done').
+
+what_i_have :- 
+	write('You have : '), nl,
+	list_bagged_things,
+	fail.
+what_i_have.
+
+what_can_i_take :-
+	current_location(Here),
+	write('You can pickup'),nl,
+	things_available(X, Here),
+	can_pickup(X),
+	tab(2), write(X), nl,
+	fail.
+
+what_can_i_take :-
+	write('Nothing'),nl.
+
+list_bagged_things :-
+	in_the_bag(X),
+	tab(2), write(X),
+	fail.
+list_bagged_things.
+
 
 
 found_treasure :-
