@@ -11,7 +11,7 @@
 /** Facts **/
 room('Entrance hall').
 room('Tool shed').
-room('Dake cave').
+room('Dark cave').
 room('Secret passage').
 room('Resting place').
 room('Challange room').
@@ -41,13 +41,13 @@ challange('Lego city replica', 'Challange: Fill in the blanks "Everything is ___
 challange('Puzzle room', 'Challange: If you find 20 coins in the treasure, and you have 4 friends, how much will each get?').
 
 challange_answer('Entrance hall', 'Buy').
-challange_answer('Dark caev', 'Torch').
+challange_answer('Dark cave', 'Torch').
 challange_answer('Challange room', 'Rope').
 challange_answer('Puzzle room', '4').
 challange_answer('Lego city replica', 'awsome').
 
 challange_requirements('Entrance hall', 'Money').
-challange_requirements('Dark caev', 'Torch').
+challange_requirements('Dark cave', 'Torch').
 challange_requirements('Challange room', 'Rope').
 challange_requirements('Puzzle room', 'Money').
 challange_requirements('Lego city replica', 'Money').
@@ -85,6 +85,8 @@ path('Entrance hall', 'Tool shed').
 path('Tool shed', 'Entrance hall').
 path('Tool shed', 'Dark cave').
 path('Dark cave', 'Resting place').
+path('Dark cave', 'Tool shed').
+path('Resting place', 'Dark cave').
 path('Resting place', 'Secret passage').
 path('Secret passage', 'Resting place').
 path('Secret passage', 'Lego city replica').
@@ -107,6 +109,18 @@ look :-
 	notice_objects_at(Place), nl,
 	tab(2), write('You can go to : '), nl,
 	where_to_go(Place).
+
+path_unchallanged('Tool shed', 'Entrance hall').
+path_unchallanged('Tool shed', 'Dark cave').
+path_unchallanged('Dark cave', 'Tool shed').
+path_unchallanged('Resting place', 'Secret passage').
+path_unchallanged('Resting place', 'Dark cave').
+path_unchallanged('Secret passage', 'Resting place').
+path_unchallanged('Secret passage', 'Lego city replica').
+path_unchallanged('Lego city replica', 'Secret passage').
+path_unchallanged('Resting place', 'Challange room').
+path_unchallanged('Challange room', 'Resting place').
+path_unchallanged('Puzzle room', 'Challange room').
 
 challange_completed(Place) :-
 	completed_challange_for(Place),nl.
@@ -133,12 +147,19 @@ answer(_) :-
 
 move(Place) :-
 	current_location(Here),
+	path_unchallanged(Here, Place),
+	go(Here, Place),
+	winner(Place).
+
+move(Place) :-
+	current_location(Here),
 	challange_completed(Here),
 	go(Here, Place),
 	winner(Place).
 
 move(_) :-
-	write('You can''t move that way.').
+	current_location(Here),
+	write('You can''t move that way. from '), write(Here),nl.
 
 go(Here, There) :-
 	path(Here, There),
@@ -169,7 +190,8 @@ where_to_go(Place) :-
 	path(Place, X),
 	tab(3),
 	write(X),
-	nl.
+	nl,
+	fail.
 
 where_to_go(_).
 
@@ -279,11 +301,18 @@ finish :-
 
 start :- start_game.
 
+initialise_game :- 
+	retract(game_started(false)),
+	assert(game_started(true)),
+	asserta(completed_challange_for('Tool shed')),
+	asserta(completed_challange_for('Secret passage')),
+	asserta(completed_challange_for('Resting place')),
+	asserta(completed_challange_for('Treasure room')).
+
 start_game :- 
 	intro_message,
 	nl,
-	retract(game_started(false)),
-	assert(game_started(true)),
+	initialise_game,
 	write('You''re entering the Entrance hall'),
 	go('Entrance hall').
 
