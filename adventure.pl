@@ -33,17 +33,18 @@ things_available('Lego people', 'Lego city replica').
 things_available('Lego houses', 'Lego city replica').
 things_available('Lego cars', 'Lego city replica').
 things_available('Lego trees', 'Lego city replica').
+things_available('Treasure room', 'Treasure Treasure Treasure').
 
-challange('Entrance hall', 'Challange: You can''t leave this place without a ticket: ''Buy or not-buy, that is the question''').
-challange('Dark cave', 'Challange: It''s dark in here. What will you use?').
-challange('Challange room', 'Challange: You can swing past the dragon, what can you use?').
-challange('Lego city replica', 'Challange: Fill in the blanks "Everything is _____"').
-challange('Puzzle room', 'Challange: If you find 20 coins in the treasure, and you have 4 friends, how much will each get?').
+challange('Entrance hall', 'CHALLANGE: You can''t leave this place without something: ''Buy or not-buy, that is the question''').
+challange('Dark cave', 'CHALLANGE: It''s dark in here. What will you use?').
+challange('Challange room', 'CHALLANGE: You can swing past the dragon, what can you use?').
+challange('Lego city replica', 'CHALLANGE: Fill in the blanks "Everything is _____"').
+challange('Puzzle room', 'CHALLANGE: If you find 20 coins in the treasure, and you have 4 friends, how much will each get?').
 
-challange_answer('Entrance hall', 'Buy').
+challange_answer('Entrance hall', 'Ticket').
 challange_answer('Dark cave', 'Torch').
 challange_answer('Challange room', 'Rope').
-challange_answer('Puzzle room', '4').
+challange_answer('Puzzle room', '5').
 challange_answer('Lego city replica', 'awsome').
 
 challange_requirements('Entrance hall', 'Money').
@@ -52,6 +53,11 @@ challange_requirements('Challange room', 'Rope').
 challange_requirements('Puzzle room', 'Money').
 challange_requirements('Lego city replica', 'Money').
 
+challange_hit('Entrance hall', 'You might have to ''Buy'' something. Look around, what can you buy?').
+challange_hit('Dark cave', 'Oh darkness, what can rid that. Look around what you could find that you can pickup.').
+challange_hit('Challange room', 'Was there something in the tool shed that you might or might not have picked up?').
+challange_hit('Puzzle room', 'Sharing is caring, and you should do it equally.').
+challange_hit('Lego city replica', 'What''s that song they always play?').
 
 completed_challange_for().
 
@@ -99,16 +105,21 @@ path('Puzzle room', 'Challange room').
 path('Puzzle room', 'Treasure room').
 
 where_am_i :-
+	write('||------------------------------------------------------'),nl,
 	current_location(Place),
-	write('You are at the '), write(Place).
+	write('||'), tab(2),write('>> You are at the : '), write(Place),nl,
+	write('||------------------------------------------------------').
+
 
 look :-
 	current_location(Place),
-	tab(2), write('You are at the '), write(Place), nl,
-	tab(2), write('You can see : '), nl,
+	write('||------------------------------------------------------'),nl,
+	write('||'),tab(2), write('>> You are at the '), write(Place), nl,
+	write('||'),tab(2), write('>> You can see : '), nl,
 	notice_objects_at(Place), nl,
-	tab(2), write('You can go to : '), nl,
-	where_to_go(Place).
+	write('||'),tab(2), write('>> You can go to : '), nl,
+	where_to_go(Place),
+	write('||------------------------------------------------------').
 
 path_unchallanged('Tool shed', 'Entrance hall').
 path_unchallanged('Tool shed', 'Dark cave').
@@ -122,6 +133,7 @@ path_unchallanged('Resting place', 'Challange room').
 path_unchallanged('Challange room', 'Resting place').
 path_unchallanged('Puzzle room', 'Challange room').
 
+
 challange_completed(Place) :-
 	completed_challange_for(Place),nl.
 
@@ -132,17 +144,26 @@ challange_completed(_) :-
 
 show_leave_challange(Place) :-
 	challange(Place, X),
-	write(X),nl.
+	write('||------------------------------------------------------'),nl,
+	write('||'), tab(2), write(X),nl,
+	write('||'), tab(2), write('Use command: answer(''the answer'' to answer the challange.'),nl,
+	write('||------------------------------------------------------').
+
 
 answer(Answer) :-
 	current_location(Here),
 	challange_requirements(Here, Thing),
 	thing_in_bag(Thing),
 	challange_answer(Here, Answer),
-	assert(completed_challange_for(Here)),nl.
+	assert(completed_challange_for(Here)),
+	write('||------------------------------------------------------'),nl,
+	write('|| That is the correct answer. Now try moving again.'),nl,
+	write('||------------------------------------------------------').
 
 answer(_) :-
-	write('Wrong answer buddy. Try again'),nl,
+	write('||------------------------------------------------------'),nl,
+	write('|| ERROR: Wrong answer buddy. Try again'),nl,
+	write('||------------------------------------------------------'),
 	fail.
 
 move(Place) :-
@@ -159,7 +180,10 @@ move(Place) :-
 
 move(_) :-
 	current_location(Here),
-	write('You can''t move that way. from '), write(Here),nl.
+	write('||'),nl,
+	write('|| ERROR: Move failed from '), write(Here),nl,
+	write('||').
+
 
 go(Here, There) :-
 	path(Here, There),
@@ -176,79 +200,93 @@ winner(Place) :-
 	found_treasure(Place).
 
 winner(_) :-
-	write('Treasure yet to be found').
+	nl, write('||'), nl,
+	write('|| Treasure yet to be found').
 
 notice_objects_at(Place) :-
 	things_available(X, Place),
-	tab(3),
-	write('There is a '), write(X), write(' here.'), nl,
+	write('||'),tab(3),
+	write('* '), write(X), write(' here.'), nl,
 	fail.
+
 notice_objects_at(_).
 
 
 where_to_go(Place) :-
 	path(Place, X),
-	tab(3),
-	write(X),
-	nl,
+	write('||'),tab(3),
+	write('->'),write(X),nl,
 	fail.
 
 where_to_go(_).
 
 
 take(Thing) :-
+	write('||------------------------------------------------------'),nl,
 	allowed_to_take(Thing),
-	take_thing(Thing).
+	take_thing(Thing),
+	write('||------------------------------------------------------').
 
 allowed_to_take(Thing) :-
 	current_location(Place),
 	things_available(Thing, Place).
 allowed_to_take(Thing) :-
-	write('There is no '), write(Thing), write(' here'),nl,
+	nl, write('|| ERROR: There is no '), write(Thing), write(' here'),nl,
 	fail.
 
 take_thing(Thing) :-
-	write('You''re taking : '), write(Thing), nl,
+	write('|| You''re taking : '), write(Thing), write('...'),nl,
 	asserta(in_the_bag(Thing)),
-	write('Take over complete'), nl.
+	write('|| Take over complete'), nl.
 
 drop(Thing) :-
+	write('||------------------------------------------------------'),nl,
 	allowed_to_drop(Thing),
-	drop_thing(Thing).
+	drop_thing(Thing),
+	write('||------------------------------------------------------').
 
 allowed_to_drop(Thing) :-
-	write('Checking if you have '), write(Thing), nl,
+	write('|| Checking if you have '), write(Thing), nl,
 	in_the_bag(Thing).
 
 can_drop(Thing) :-
-	write('You don''t have '), write(Thing), write(', to drop it'), nl,
+	write('|| You don''t have '), write(Thing), write(', to drop it'), nl,
 	fail.
 
 drop_thing(Thing) :- 
-	write('You''re dropping '), write(Thing), nl,
+	write('|| You''re dropping '), write(Thing), nl,
 	retract(in_the_bag(Thing)),
-	write('Drop done').
+	write('|| Drop done'),nl.
 
 what_i_have :- 
-	write('You have : '), nl,
+	write('||------------------------------------------------------'),nl,
+	write('|| You have : '), nl,
 	list_bagged_things,
+	write('||------------------------------------------------------'),nl,
 	fail.
+
 what_i_have.
+
+things_to_pickup(Here) :-
+	things_available(Thing, Here),
+	can_pickup(Thing),
+	write('||'),tab(2), write(Thing),nl,
+	fail.
+
+things_to_pickup(_) :-
+	fail.
 
 what_can_i_take :-
 	current_location(Here),
-	write('You can pickup'),nl,
-	things_available(X, Here),
-	can_pickup(X),
-	tab(2), write(X), nl,
-	fail.
-
-what_can_i_take :-
-	write('Nothing'),nl.
+	write('||------------------------------------------------------'),nl,
+	write('|| You can pickup'),nl,
+	things_to_pickup(Here),
+	write('||------------------------------------------------------'),nl.
+what_can_i_take.
 
 list_bagged_things :-
 	in_the_bag(X),
-	tab(2), write(X),
+	write('||'), tab(2), write(X),nl,
 	fail.
 list_bagged_things.
 
@@ -256,52 +294,92 @@ thing_in_bag(Thing) :-
 	in_the_bag(Thing).
 
 thing_in_bag(_) :-
-	write('You don''t have what you need. Look around you and see what you can take'),nl,
 	fail.
 
 
 found_treasure(Place) :-
-	treasure_in(Place),
-	tab(2), write('Congratulations, you''ve found the treasure'),nl,
-	tab(2), write('Go forth and prospoer!!!').
+	treasure_in(Place),nl,
+	write('||*****************************************************'),nl,
+	write('||'), tab(2), write('Congratulations, you''ve found the treasure !!!!!!'),nl,
+	write('||'), tab(2), write('Go forth and prospoer!!!'),nl,
+	write('||*****************************************************').
 
 
 show_commands :-
+	write('||'),
 	tab(3), 
 	write('move(Place). -- Go to a place'),nl,
+	write('||'),
 	tab(3), 
 	write('look. -- Look around the current place'),nl,
+	write('||'),
+	tab(3),
+	write('where_am_i. - Find out where you are'),nl,
+	write('||'),
 	tab(3),
 	write('hint. -- Get some hints on what to do'),nl,
+	write('||'),
 	tab(3),
-	write('take(Object). -- To pick up an object'),nl,
+	write('take(Object). -- To pick up an object and put it in the bag'),nl,
+	write('||'),
 	tab(3),
-	write('drop(Object). -- To drop an object'),nl,
+	write('drop(Object). -- To drop an object from your bag'),nl,
+	write('||'),
 	tab(3),
-	write('answer(''the answer''). -- To drop an object'),nl,
+	write('what_i_have. -- To list out what you have bagged already'),nl,
+	write('||'),
+	tab(3),
+	write('what_can_i_take. -- To list out what you can take from the current location'),nl,
+	write('||'),
+	tab(3),
+	write('answer(''the answer''). -- When you see a CHALLANGE, then answer the challage with this command'),nl,
+	write('||'),
+	tab(3),
+	write('reset. -- Resets the whole game. Takes you back to the begining.'),nl,
+	write('||'),
+	tab(3),
+	write('help. -- See the available commands'),nl,
+	write('||'),
 	tab(3),
 	write('finish. -- Finish the game'),nl.
 
 intro_message :- 
-	write('Welcome to a Treasure hunt with a twist'),nl,
-  	nl,
-  	write('You will enter the treasure hunt by going through the Entrance hall.'),nl,
-  	write('And from there, you will navigate to different rooms to find the treasure.'),nl,
-  	nl,
-  	write('You will type in a set of commands to navigate and perform tasks.'), nl,
-  	write('Here are the available commands at your disposal: '),nl,
+	write('||------------------------------------------------------'),nl,
+	write('|| Welcome to a Treasure hunt with a twist'),nl,write('||'),nl,
+  	write('|| You will enter the treasure hunt by going through the Entrance hall.'),nl,
+  	write('|| And from there, you will navigate to different rooms to find the treasure.'),nl,write('||'),nl,
+  	write('|| You will type in a set of commands to navigate and perform tasks.'), nl,
+  	write('|| Here are the available commands at your disposal: '),nl,write('||'),nl,
   	show_commands,
-  	nl,nl,
-  	write('Enjoy the hunt!!'),nl.
+  	write('||'),nl,
+  	write('|| Enjoy the hunt!!'),nl,
+	write('||------------------------------------------------------'),nl.
 
 finish :- 
 	nl,
 	write('You have ended the game.'),
 	fail.
 
+help :-
+	write('||------------------------------------------------------'),nl,
+	write('||'),nl,
+	write('|| Following are the commands you could use to find your treasure...'),nl,
+	show_commands,
+	write('||------------------------------------------------------').
+
+hint :-
+	current_location(Here),
+	challange_hit(Here, TheHint),
+	write('||------------------------------------------------------'),nl,
+	write('||'), write(TheHint),nl,
+	write('||------------------------------------------------------').
+
 start :- start_game.
 
 initialise_game :- 
+	ticket_bought('no'),
+	current_location('Entrance hall'),
+	in_the_bag('Money'),
 	retract(game_started(false)),
 	assert(game_started(true)),
 	asserta(completed_challange_for('Tool shed')),
@@ -312,7 +390,7 @@ initialise_game :-
 start_game :- 
 	intro_message,
 	nl,
-	initialise_game,
-	write('You''re entering the Entrance hall'),
-	go('Entrance hall').
+	write('>> You''re entering the Entrance hall'),
+	initialise_game,nl,
+	write('>> You are now at the Entrance hall').
 
